@@ -7,13 +7,12 @@ require('simple_html_dom.php');
 // Livar Bergheim - 2015-08-28
 // NB! Don
 
+$time_start = microtime(true); // start measuring run-time of script
+
 $valglokaleEndpoint = "http://valglokaler.no/wp-admin/admin-ajax.php";
 
-// stemming på dagen
-$pointsUrl = "http://valglokaler.no/wp-content/themes/valg-theme/js/valglokaler.js";
-
-// stemming i forkant
-// $pointsUrl = "http://valglokaler.no/wp-content/themes/valg-theme/js/valglokaler-pre.js";
+$pointsUrl = "http://valglokaler.no/wp-content/themes/valg-theme/js/valglokaler.js"; // stemming på dagen
+// $pointsUrl = "http://valglokaler.no/wp-content/themes/valg-theme/js/valglokaler-pre.js"; // stemming i forkant
 
 $testdata = '<div class="lokale-preview">
 				<h2><a href="http://valglokaler.no/valglokale/furulund/">Furulund</a></h2>
@@ -22,6 +21,10 @@ $testdata = '<div class="lokale-preview">
 				<p class="times"><strong>13.09.2015</strong>: kl 14:00&mdash;19:00<br /><strong>14.09.2015</strong>: kl 09:00&mdash;19:00</p>
 				
 			</div>';
+
+function nap() {
+	// time_nanosleep(0, 200000000);
+}
 
 // http://stackoverflow.com/a/6609181/2252177
 function fetchValglokale($id) {
@@ -112,10 +115,7 @@ function getValglokaleDetails($arrayPos) {
 $httpCalls = 1;
 $pointsDataRaw = file_get_contents($pointsUrl);
 $pointsDataRaw = substr($pointsDataRaw, 18);
-// print_r($pointsDataRaw);
 $pointsData = json_decode($pointsDataRaw, true);
-
-// 68592
 
 print ("id;lat;lon;name;address;openinghours;url;county;municipality;lastModified\n");
 
@@ -127,11 +127,9 @@ for ($i = 0; $i < count($pointsData); $i++) {
 		fetchValglokale($pointsData[$i]["post_id"])
 	);
 
-	time_nanosleep(0, 200000000);
+	nap();
 
 	getValglokaleDetails($i);
-
-	time_nanosleep(0, 200000000);
 
 	$vl = $pointsData[$i];
 	print(
@@ -147,16 +145,19 @@ for ($i = 0; $i < count($pointsData); $i++) {
 		. $vl['lastModified']
 		. "\n");
 
-	time_nanosleep(0, 200000000);
-
-	// ob_flush();
 	flush();
 
-	// if ($i == 50) break;
+	nap();
+
+	if ($i == 10) break;
 }
 
-print("\n" . count($pointsData) . "\n");
+$time_end = microtime(true);
+$time = number_format($time_end - $time_start, 4);
 
-print("\n" . $httpCalls . "\n\n");
+print("\nValglokaler: " . count($pointsData) . "\n");
+
+print("HttpCalls: " . $httpCalls . "\n");
+print("Runtime: " . $time . "\n" . number_format($httpCalls / $time, 1) . " calls/second." . "\n");
 // print_r($pointsData);
 ?>
