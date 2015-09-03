@@ -112,12 +112,50 @@ function getValglokaleDetails($arrayPos) {
 	$GLOBALS['pointsData'][$arrayPos]['lastModified'] = $lastModified;
 }
 
+function getKommuneNames() {
+	$url = "http://hotell.difi.no/download/difi/geo/kommune";
+	$dataCSV = file($url);
+	$kommunar = array();
+	for ($i = 1; $i < count($dataCSV); $i++) {
+		$kommunar[] = str_getcsv($dataCSV[$i], ";")[2];
+	}
+	return $kommunar;
+}
+
+function getFylkeNames() {
+	$url = "http://hotell.difi.no/download/difi/geo/fylke";
+	$dataCSV = file($url);
+	$fylke = array();
+	for ($i = 1; $i < count($dataCSV)-2; $i++) { // NB. Hoppar over to siste; "Kontinentalsokkelen" og "Uoppgitt"
+		$fylke[] = str_getcsv($dataCSV[$i], ";")[1];
+	}
+	return $fylke;
+}
+
+function verifyCountyAndMunicipality($valglokale) {
+	if ($valglokale['county']) {
+		if (!in_array($valglokale['county'], $GLOBALS['fylke'])) {
+			print("FEIL! " . $valglokale['county'] . " er ikkje eit fylke.\n");
+		}
+	}
+	if ($valglokale['municipality']) {
+		if ($valglokale['county'] != "Oslo") { // fordi Oslo brukar bydelar
+			if (!in_array($valglokale['municipality'], $GLOBALS['kommunar'])) {
+				print("FEIL! " . $valglokale['municipality'] . " er ikkje eit kommunenamn.\n");
+			}
+		}
+	}
+}
+
+$kommunar = getKommuneNames();
+$fylke = getFylkeNames();
+
 $httpCalls = 1;
 $pointsDataRaw = file_get_contents($pointsUrl);
 $pointsDataRaw = substr($pointsDataRaw, 18);
 $pointsData = json_decode($pointsDataRaw, true);
 
-print ("id;lat;lon;name;address;openinghours;url;county;municipality;lastModified\n");
+print ("id;navn;fylke;kommune;addresse;aapningstider;lat;lon;url;sistEndret\n");
 
 for ($i = 0; $i < count($pointsData); $i++) {
 	set_time_limit(10); // set timeout på nytt for kvart valglokale
@@ -134,14 +172,14 @@ for ($i = 0; $i < count($pointsData); $i++) {
 	$vl = $pointsData[$i];
 	print(
 		$vl['post_id'] . ";"
-		. $vl['lat'] . ";"
-		. $vl['lon'] . ";"
 		. "\"" . $vl['name'] . "\"" . ";"
+		. $vl['county'] . ";"
+		. $vl['municipality'] . ";"		
 		. "\"" . $vl['address'] . "\"" . ";"
 		. "\"" . $vl['times'] . "\"" . ";"
+		. $vl['lat'] . ";"
+		. $vl['lon'] . ";"		
 		. $vl['url'] . ";"
-		. $vl['county'] . ";"
-		. $vl['municipality'] . ";"
 		. $vl['lastModified']
 		. "\n");
 
@@ -149,15 +187,18 @@ for ($i = 0; $i < count($pointsData); $i++) {
 
 	nap();
 
-	if ($i == 10) break;
+	verifyCountyAndMunicipality($vl);
+
+	// if ($i == 50) break;
 }
 
+getKommuneNames();
+
 $time_end = microtime(true);
-$time = number_format($time_end - $time_start, 4);
+$time = number_format($time_end - $time_start, 2);
 
 print("\nValglokaler: " . count($pointsData) . "\n");
 
-print("HttpCalls: " . $httpCalls . "\n");
-print("Runtime: " . $time . "\n" . number_format($httpCalls / $time, 1) . " calls/second." . "\n");
-// print_r($pointsData);
+print("HTTP-kall: " . $httpCalls . "\n");
+print("Køyretid: " . $time . " sekund\n" . number_format($httpCalls / $time, 1) . " kall/sekund." . "\n");
 ?>
