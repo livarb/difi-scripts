@@ -129,6 +129,11 @@ function getFylkeNames() {
 	for ($i = 1; $i < count($dataCSV)-2; $i++) { // NB. Hoppar over to siste; "Kontinentalsokkelen" og "Uoppgitt"
 		$fylke[] = str_getcsv($dataCSV[$i], ";")[1];
 	}
+
+	// Kompenserar for verdiar som avvik frå standard namn på fylker
+	$fylke[] = "Troms Romsa";
+	$fylke[] = "Finnmark Finnmárku";
+
 	return $fylke;
 }
 
@@ -189,7 +194,7 @@ for ($i = 0; $i < count($pointsData); $i++) {
 
 	verifyCountyAndMunicipality($vl);
 
-	// if ($i == 50) break;
+	// if ($i == 10) break;
 }
 
 getKommuneNames();
