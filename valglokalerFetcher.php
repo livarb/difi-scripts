@@ -168,7 +168,14 @@ function fixCountyAndMunicipality($id) {
 	} else if ($GLOBALS['pointsData'][$id]['post_id'] == 69608) { // kommune og fylke er omvendt i breadcrumbs
 		$GLOBALS['pointsData'][$id]['municipality'] = "Bamble";
 		$GLOBALS['pointsData'][$id]['county'] = "Telemark";		
-	}
+	// forhånd: "Servicetorget"
+	} else if ($GLOBALS['pointsData'][$id]['post_id'] == 69616) { // kommune og fylke er omvendt i breadcrumbs
+		$GLOBALS['pointsData'][$id]['municipality'] = "Nordreisa";
+		$GLOBALS['pointsData'][$id]['county'] = "Troms Romsa";
+	// forhånd: "Publikumskontoret"
+	} else if ($GLOBALS['pointsData'][$id]['post_id'] == 69637) { // fylke (Buskerud) er dobbelt opp i breadcrumbs
+		$GLOBALS['pointsData'][$id]['municipality'] = "Hole";
+	}	
 }
 
 $kommunar = getKommuneNames();
