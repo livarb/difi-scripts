@@ -152,6 +152,25 @@ function verifyCountyAndMunicipality($valglokale) {
 	}
 }
 
+// Corrects known bugs
+function fixCountyAndMunicipality($id) {
+	// "Nesodden bedehus"
+	if ($GLOBALS['pointsData'][$id]['post_id'] == 69690) { // fylke(Hordaland) er dobbelt-opp
+		$GLOBALS['pointsData'][$id]['municipality'] = "Samnanger";
+	// "Fiane skole"
+	} else if ($GLOBALS['pointsData'][$id]['post_id'] == 69629) { // fylke(Aust-Agder) er dobbelt-opp
+		$GLOBALS['pointsData'][$id]['municipality'] = "Gjerstad";
+	// "Salangen Kulturhus"
+	} else if ($GLOBALS['pointsData'][$id]['post_id'] == 69223) { // kommune og fylke er omvendt i breadcrumbs
+		$GLOBALS['pointsData'][$id]['municipality'] = "Salangen";
+		$GLOBALS['pointsData'][$id]['county'] = "Troms Romsa";
+	// "Rønholt skole"
+	} else if ($GLOBALS['pointsData'][$id]['post_id'] == 69608) { // kommune og fylke er omvendt i breadcrumbs
+		$GLOBALS['pointsData'][$id]['municipality'] = "Bamble";
+		$GLOBALS['pointsData'][$id]['county'] = "Telemark";		
+	}
+}
+
 $kommunar = getKommuneNames();
 $fylke = getFylkeNames();
 
@@ -174,6 +193,8 @@ for ($i = 0; $i < count($pointsData); $i++) {
 
 	getValglokaleDetails($i);
 
+	fixCountyAndMunicipality($i);
+
 	$vl = $pointsData[$i];
 	print(
 		$vl['post_id'] . ";"
@@ -188,11 +209,11 @@ for ($i = 0; $i < count($pointsData); $i++) {
 		. $vl['lastModified']
 		. "\n");
 
+	verifyCountyAndMunicipality($vl);
+
 	flush();
 
 	nap();
-
-	verifyCountyAndMunicipality($vl);
 
 	// if ($i == 10) break;
 }
