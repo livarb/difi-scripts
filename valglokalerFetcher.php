@@ -5,7 +5,9 @@ require('simple_html_dom.php');
 
 // For creating machine readable data from valglokaler.no
 // Livar Bergheim - 2015-08-28
-// NB! Don
+// Don't run the script to get the data.
+// Get the data at:
+// http://data.norge.no/search/site/valglokaler.no
 
 $time_start = microtime(true); // start measuring run-time of script
 
